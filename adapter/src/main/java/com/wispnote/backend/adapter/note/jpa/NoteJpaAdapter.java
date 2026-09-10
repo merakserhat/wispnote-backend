@@ -1,7 +1,6 @@
 package com.wispnote.backend.adapter.note.jpa;
 
 import com.wispnote.backend.adapter.common.exception.EntityNotFoundException;
-import com.wispnote.backend.adapter.common.jpa.specification.CommonSpecification;
 import com.wispnote.backend.adapter.note.converter.EnrichmentStatusConverter;
 import com.wispnote.backend.adapter.note.converter.NoteKindConverter;
 import com.wispnote.backend.adapter.note.jpa.entity.NoteEntity;
@@ -19,6 +18,7 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.wispnote.backend.adapter.common.jpa.specification.CommonSpecification.isNotDeleted;
 import static com.wispnote.backend.adapter.note.jpa.specification.NoteSpecification.belongsToMember;
 import static com.wispnote.backend.adapter.note.jpa.specification.NoteSpecification.belongsToNoteGroup;
 import static com.wispnote.backend.adapter.note.jpa.specification.NoteSpecification.kind;
@@ -71,7 +71,7 @@ public class NoteJpaAdapter implements NotePort {
                 .and(kind(NoteKindConverter.jpa.fromEnum(filter.kind())))
                 .and(selectedTextLike(filter.search()))
                 .and(belongsToNoteGroup(memberId, filter.noteGroupId()))
-                .and(CommonSpecification.isNotDeleted());
+                .and(isNotDeleted());
 
         var page = noteRepository.findAll(
                 specification,

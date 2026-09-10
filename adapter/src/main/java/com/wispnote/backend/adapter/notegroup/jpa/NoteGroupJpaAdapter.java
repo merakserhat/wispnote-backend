@@ -1,14 +1,15 @@
 package com.wispnote.backend.adapter.notegroup.jpa;
 
 import com.wispnote.backend.adapter.common.exception.EntityNotFoundException;
-import com.wispnote.backend.adapter.common.jpa.specification.CommonSpecification;
+import com.wispnote.backend.adapter.common.jpa.entity.BaseEntity_;
 import com.wispnote.backend.adapter.notegroup.jpa.entity.NoteGroupEntity;
 import com.wispnote.backend.adapter.notegroup.jpa.entity.NoteGroupNoteEntity;
-import com.wispnote.backend.adapter.notegroup.jpa.repository.NoteGroupNoteCountProjection;
+import com.wispnote.backend.adapter.notegroup.jpa.projection.NoteGroupNoteCountProjection;
 import com.wispnote.backend.adapter.notegroup.jpa.repository.NoteGroupNoteRepository;
 import com.wispnote.backend.adapter.notegroup.jpa.repository.NoteGroupRepository;
 import com.wispnote.backend.application.notegroup.model.NoteGroup;
 import com.wispnote.backend.application.notegroup.model.NoteGroupFilter;
+import com.wispnote.backend.application.notegroup.model.NoteGroupSummary;
 import com.wispnote.backend.application.notegroup.port.NoteGroupPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
@@ -19,6 +20,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.wispnote.backend.adapter.common.jpa.specification.CommonSpecification.isNotDeleted;
 import static com.wispnote.backend.adapter.notegroup.jpa.specification.NoteGroupSpecification.belongsToMember;
 import static com.wispnote.backend.adapter.notegroup.jpa.specification.NoteGroupSpecification.titleOrDescriptionLike;
 import static java.util.stream.Collectors.toMap;
@@ -42,18 +44,10 @@ public class NoteGroupJpaAdapter implements NoteGroupPort {
     }
 
     @Override
-    public Optional<NoteGroup> findByIdAndMemberId(UUID id, UUID memberId) {
-        var noteGroupEntity = noteGroupRepository.findByIdAndMemberIdAndDeletedFalse(id, memberId);
-
-        if (noteGroupEntity.isEmpty()) {
-            return Optional.empty();
-        }
-
-        var entity = noteGroupEntity.get();
-        var noteCount = noteGroupNoteRepository.countActiveNotesByNoteGroupId(entity.getId());
-        var noteGroup = entity.toModel(noteCount);
-
-        return Optional.of(noteGroup);
+    public Optional<NoteGroupSummary> findByIdAndMemberId(UUID id, UUID memberId) {
+        return noteGroupRepository.findByIdAndMemberIdAndDeletedFalse(id, memberId)
+                .map(entity -> entity.toSummary(
+                        noteGroupNoteRepository.countActiveNotesByNoteGroupId(entity.getId())));
     }
 
     @Override
@@ -62,12 +56,12 @@ public class NoteGroupJpaAdapter implements NoteGroupPort {
     }
 
     @Override
-    public List<NoteGroup> findAllByMemberId(UUID memberId, NoteGroupFilter filter) {
+    public List<NoteGroupSummary> findAllByMemberId(UUID memberId, NoteGroupFilter filter) {
         var noteGroupEntities = findNoteGroupEntities(memberId, filter);
         var noteCounts = findNoteCounts(noteGroupEntities);
 
         return noteGroupEntities.stream()
-                .map(entity -> entity.toModel(noteCounts.getOrDefault(entity.getId(), 0L)))
+                .map(entity -> entity.toSummary(noteCounts.getOrDefault(entity.getId(), 0L)))
                 .toList();
     }
 
@@ -77,6 +71,11 @@ public class NoteGroupJpaAdapter implements NoteGroupPort {
                 .orElseThrow(EntityNotFoundException::new);
         entity.setDeleted(true);
         noteGroupRepository.save(entity);
+    }
+
+    @Override
+    public boolean existsNoteInGroup(UUID noteGroupId, UUID noteId) {
+        return noteGroupNoteRepository.existsByNoteGroupIdAndNoteIdAndDeletedFalse(noteGroupId, noteId);
     }
 
     @Override
@@ -97,8 +96,8 @@ public class NoteGroupJpaAdapter implements NoteGroupPort {
         return noteGroupRepository.findAll(
                 belongsToMember(memberId)
                         .and(titleOrDescriptionLike(filter.search()))
-                        .and(CommonSpecification.isNotDeleted()),
-                Sort.by(DESC, "createdAt"));
+                        .and(isNotDeleted()),
+                Sort.by(DESC, BaseEntity_.CREATED_AT));
     }
 
     private Map<UUID, Long> findNoteCounts(List<NoteGroupEntity> noteGroupEntities) {

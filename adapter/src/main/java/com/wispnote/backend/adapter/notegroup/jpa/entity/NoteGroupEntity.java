@@ -2,6 +2,7 @@ package com.wispnote.backend.adapter.notegroup.jpa.entity;
 
 import com.wispnote.backend.adapter.common.jpa.entity.BaseEntity;
 import com.wispnote.backend.application.notegroup.model.NoteGroup;
+import com.wispnote.backend.application.notegroup.model.NoteGroupSummary;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -28,15 +29,10 @@ public class NoteGroupEntity extends BaseEntity {
         return new NoteGroup(getId(),
                 memberId,
                 title,
-                description,
-                0L);
+                description);
     }
 
-    public NoteGroup toModel(long noteCount) {
-        return new NoteGroup(getId(),
-                memberId,
-                title,
-                description,
-                noteCount);
+    public NoteGroupSummary toSummary(long noteCount) {
+        return new NoteGroupSummary(toModel(), noteCount);
     }
 }

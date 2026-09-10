@@ -1,4 +1,4 @@
-package com.wispnote.backend.adapter.notegroup.jpa.repository;
+package com.wispnote.backend.adapter.notegroup.jpa.projection;
 
 import java.util.UUID;
 

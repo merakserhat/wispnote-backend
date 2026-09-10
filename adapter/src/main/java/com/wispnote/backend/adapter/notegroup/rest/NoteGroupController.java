@@ -1,10 +1,9 @@
 package com.wispnote.backend.adapter.notegroup.rest;
 
 import com.wispnote.backend.adapter.auth.model.CustomUserDetails;
-import com.wispnote.backend.adapter.notegroup.rest.request.NoteGroupCreateRequest;
 import com.wispnote.backend.adapter.notegroup.rest.request.NoteGroupAddNoteRequest;
+import com.wispnote.backend.adapter.notegroup.rest.request.NoteGroupCreateRequest;
 import com.wispnote.backend.adapter.notegroup.rest.request.NoteGroupListRequest;
-import com.wispnote.backend.adapter.notegroup.rest.request.NoteGroupRemoveNoteRequest;
 import com.wispnote.backend.adapter.notegroup.rest.response.NoteGroupResponse;
 import com.wispnote.backend.application.notegroup.NoteGroupFacade;
 import jakarta.validation.Valid;
@@ -68,11 +67,11 @@ public class NoteGroupController {
         noteGroupFacade.addNote(userDetail.getId(), noteGroupId, request.getNoteId());
     }
 
-    @DeleteMapping("/{noteGroupId}/notes")
+    @DeleteMapping("/{noteGroupId}/notes/{noteId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeNote(@PathVariable UUID noteGroupId,
-                           @RequestBody @Valid NoteGroupRemoveNoteRequest request,
+                           @PathVariable UUID noteId,
                            @AuthenticationPrincipal CustomUserDetails userDetail) {
-        noteGroupFacade.removeNote(userDetail.getId(), noteGroupId, request.getNoteId());
+        noteGroupFacade.removeNote(userDetail.getId(), noteGroupId, noteId);
     }
 }
