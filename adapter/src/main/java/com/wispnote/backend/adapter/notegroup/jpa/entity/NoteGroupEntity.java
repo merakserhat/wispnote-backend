@@ -28,6 +28,15 @@ public class NoteGroupEntity extends BaseEntity {
         return new NoteGroup(getId(),
                 memberId,
                 title,
-                description);
+                description,
+                0L);
+    }
+
+    public NoteGroup toModel(long noteCount) {
+        return new NoteGroup(getId(),
+                memberId,
+                title,
+                description,
+                noteCount);
     }
 }

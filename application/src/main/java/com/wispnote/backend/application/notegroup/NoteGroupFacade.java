@@ -5,6 +5,7 @@ import com.wispnote.backend.application.notegroup.model.CreateNoteGroupCommand;
 import com.wispnote.backend.application.notegroup.model.NoteGroup;
 import com.wispnote.backend.application.notegroup.model.NoteGroupFilter;
 import com.wispnote.backend.application.notegroup.port.NoteGroupPort;
+import com.wispnote.backend.application.notegroup.service.NoteGroupMembershipService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import static net.logstash.logback.argument.StructuredArguments.kv;
 public class NoteGroupFacade {
 
     private final NoteGroupPort noteGroupPort;
+    private final NoteGroupMembershipService noteGroupMembershipService;
 
     public NoteGroup create(UUID memberId, CreateNoteGroupCommand createNoteGroupCommand) {
         log.info("Creating note group for {} with {}, {}",
@@ -53,5 +55,23 @@ public class NoteGroupFacade {
                 kv("noteGroupId", noteGroupId));
 
         noteGroupPort.deleteByIdAndMemberId(noteGroupId, memberId);
+    }
+
+    public void addNote(UUID memberId, UUID noteGroupId, UUID noteId) {
+        log.info("Adding note to note group for {} with {}, {}",
+                kv("memberId", memberId),
+                kv("noteGroupId", noteGroupId),
+                kv("noteId", noteId));
+
+        noteGroupMembershipService.addNoteToGroup(memberId, noteGroupId, noteId);
+    }
+
+    public void removeNote(UUID memberId, UUID noteGroupId, UUID noteId) {
+        log.info("Removing note from note group for {} with {}, {}",
+                kv("memberId", memberId),
+                kv("noteGroupId", noteGroupId),
+                kv("noteId", noteId));
+
+        noteGroupMembershipService.removeNoteFromGroup(memberId, noteGroupId, noteId);
     }
 }

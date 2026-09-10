@@ -8,6 +8,7 @@ public record CreateNoteGroupCommand(String title, String description) {
         return new NoteGroup(null,
                 memberId,
                 title,
-                description);
+                description,
+                0L);
     }
 }

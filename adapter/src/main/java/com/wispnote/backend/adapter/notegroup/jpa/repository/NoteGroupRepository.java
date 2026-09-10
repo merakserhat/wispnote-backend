@@ -9,4 +9,6 @@ import java.util.UUID;
 
 public interface NoteGroupRepository extends JpaRepository<NoteGroupEntity, UUID>, JpaSpecificationExecutor<NoteGroupEntity> {
     Optional<NoteGroupEntity> findByIdAndMemberIdAndDeletedFalse(UUID id, UUID memberId);
+
+    boolean existsByIdAndMemberIdAndDeletedFalse(UUID id, UUID memberId);
 }

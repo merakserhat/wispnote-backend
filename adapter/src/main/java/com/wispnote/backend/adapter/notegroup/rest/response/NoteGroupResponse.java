@@ -6,11 +6,13 @@ import java.util.UUID;
 
 public record NoteGroupResponse(UUID id,
                                 String title,
-                                String description) {
+                                String description,
+                                Long noteCount) {
 
     public static NoteGroupResponse from(NoteGroup noteGroup) {
         return new NoteGroupResponse(noteGroup.id(),
                 noteGroup.title(),
-                noteGroup.description());
+                noteGroup.description(),
+                noteGroup.noteCount());
     }
 }
